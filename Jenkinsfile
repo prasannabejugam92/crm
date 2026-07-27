@@ -43,13 +43,14 @@ pipeline {
         stage('Laravel Setup') {
             steps {
                 sh '''
-                docker exec crm_app composer install --no-dev --optimize-autoloader
-                docker exec crm_app php artisan key:generate --force || true
-                docker exec crm_app php artisan migrate --force
-                docker exec crm_app php artisan config:cache
-                docker exec crm_app php artisan route:cache
-                docker exec crm_app php artisan view:cache
-                docker exec crm_app php artisan storage:link || true
+                APP_CONTAINER=$(docker compose ps -q apache)
+                docker exec $APP_CONTAINER composer install --no-dev --optimize-autoloader
+                docker exec $APP_CONTAINER php artisan key:generate --force || true
+                docker exec $APP_CONTAINER php artisan migrate --force
+                docker exec $APP_CONTAINER php artisan config:cache
+                docker exec $APP_CONTAINER php artisan route:cache
+                docker exec $APP_CONTAINER php artisan view:cache
+                docker exec $APP_CONTAINER php artisan storage:link || true
                 '''
             }
         }

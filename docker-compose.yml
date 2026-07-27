@@ -1,7 +1,7 @@
 services:
   apache:
     build: .
-    container_name: crm_app
+    #container_name: crm_app
     ports:
       - "8081:80"
    # volumes:
@@ -16,7 +16,7 @@ services:
 
   mysql:
     image: mysql:8.0
-    container_name: crm_mysql
+    #container_name: crm_mysql
     #restart: always
     restart: unless-stopped
     environment:
