@@ -25,7 +25,7 @@ services:
       MYSQL_PASSWORD: Fuel1234@
       #MYSQL_ROOT_PASSWORD: rootpassword
     ports:
-      - "3308:3306"
+      - "3309:3306"
     volumes:
       - crm_db:/var/lib/mysql
 
