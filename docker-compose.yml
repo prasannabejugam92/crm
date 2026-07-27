@@ -1,0 +1,30 @@
+services:
+  apache:
+    build: .
+    container_name: crm-apache
+    ports:
+      - "8081:80"
+    volumes:
+      - /var/www/html/crm:/var/www/html
+   # restart: always
+    restart: unless-stopped
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    container_name: crm-mysql
+    #restart: always
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: crm
+      MYSQL_USER: crmuser
+      MYSQL_PASSWORD: password
+      MYSQL_ROOT_PASSWORD: rootpassword
+    ports:
+      - "3306:3306"
+    volumes:
+      - crm-db:/var/lib/mysql
+
+volumes:
+  crm-db:
