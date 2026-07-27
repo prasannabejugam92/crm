@@ -1,107 +1,46 @@
 pipeline {
-
     agent any
-
-    environment {
-        APP_DIR = "/var/www/html/crm"
-        APP_NAME = "crm_app"
-        COMPOSE = "docker compose"
-    }
 
     stages {
 
         stage('Checkout') {
-
             steps {
-
-                git branch: 'master',
-
-                    url: 'https://github.com/prasannabejugam92/crm.git'
-
-            }
-
-        }
-
-
-        stage('Install Dependencies') {
-            steps {
-                sh 'composer install --no-dev --prefer-dist --optimize-autoloader'
+                checkout scm
             }
         }
 
-
-        stage('Testing') {
-
+        stage('Build Docker Image') {
             steps {
-
-                sh 'php artisan test'
-
+                sh 'docker compose build'
             }
-
         }
 
-        stage('Docker Build') {
-
+        stage('Start Containers') {
             steps {
-
-                sh 'docker build -t crm .'
-
+                sh 'docker compose up -d'
             }
-
         }
 
-        stage('Deploy') {
-
+        stage('Laravel Setup') {
             steps {
-
                 sh '''
-                docker compose down
-                docker compose up -d
+                docker exec laravel_app composer install --no-dev --optimize-autoloader
+                docker exec laravel_app php artisan migrate --force
+                docker exec laravel_app php artisan config:cache
+                docker exec laravel_app php artisan route:cache
+                docker exec laravel_app php artisan view:cache
                 '''
             }
-
         }
-
-
-        stage('Laravel Optimization') {
-
-            steps {
-
-                sh '''
-
-                docker exec crm_app php artisan migrate --force
-
-                docker exec crm_app php artisan config:cache
-
-                docker exec crm_app php artisan route:cache
-
-                docker exec crm_app php artisan view:cache
-
-                docker exec crm_app php artisan storage:link || true
-
-                '''
-
-            }
-
-        }
-
     }
 
-
     post {
-
         success {
-
-            echo "Deployment Successful"
-
+            echo 'Deployment Successful'
         }
 
         failure {
-
-            echo "Deployment Failed"
-
+            echo 'Deployment Failed'
         }
-
     }
-
 }
