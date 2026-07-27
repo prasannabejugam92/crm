@@ -17,7 +17,12 @@ pipeline {
 
         stage('Start Containers') {
             steps {
-                sh 'docker compose up -d'
+                    sh '''
+                    docker compose down --remove-orphans || true
+                    docker rm -f crm_mysql || true
+                    docker rm -f laravel_app || true
+                    docker compose up -d --build
+                    '''
             }
         }
 
