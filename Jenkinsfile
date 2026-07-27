@@ -15,25 +15,41 @@ pipeline {
             }
         }
 
+        stage('Debug') {
+                steps {
+                    sh '''
+                    pwd
+                    ls -la
+                    docker compose config
+                    '''
+                }
+        }
+
         stage('Start Containers') {
             steps {
                     sh '''
                     docker compose down --remove-orphans || true
-                    docker rm -f crm_mysql || true
-                    docker rm -f laravel_app || true
                     docker compose up -d --build
                     '''
+            }
+        }
+
+        stage('Wait for Container') {
+            steps {
+                sh 'sleep 15'
             }
         }
 
         stage('Laravel Setup') {
             steps {
                 sh '''
-                docker exec laravel_app composer install --no-dev --optimize-autoloader
-                docker exec laravel_app php artisan migrate --force
-                docker exec laravel_app php artisan config:cache
-                docker exec laravel_app php artisan route:cache
-                docker exec laravel_app php artisan view:cache
+                docker exec crm_app composer install --no-dev --optimize-autoloader
+                docker exec crm_app php artisan key:generate --force || true
+                docker exec crm_app php artisan migrate --force
+                docker exec crm_app php artisan config:cache
+                docker exec crm_app php artisan route:cache
+                docker exec crm_app php artisan view:cache
+                docker exec crm_app php artisan storage:link || true
                 '''
             }
         }
@@ -45,6 +61,8 @@ pipeline {
         }
 
         failure {
+            sh 'docker ps -a || true'
+            sh 'docker compose logs --tail=100 || true'
             echo 'Deployment Failed'
         }
     }
