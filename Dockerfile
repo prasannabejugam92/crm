@@ -41,24 +41,26 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 #COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 #Set the working directory inside the container
-WORKDIR /var/www/html
-
-# Copy the Laravel project files into the container
-COPY . /var/www/html
-
+WORKDIR /var/www/html/crm
 
 # Copy application
 COPY . .
 
 # Install project dependencies
-RUN composer install --no-dev --optimize-autoloader
+RUN composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-interaction \
+    --prefer-dist \
+    --no-scripts
+
 
 # Apache VirtualHost
 #COPY docker/apache/laravel.conf /etc/apache2/sites-available/000-default.conf
 COPY laravel.conf /etc/apache2/sites-available/000-default.conf
 
 # Permissions
-RUN chown -R www-data:www-data /var/www/html \
+RUN chown -R www-data:www-data /var/www/html/crm \
  && chmod -R 775 storage bootstrap/cache
 
 #RUN chown -R www-data:www-data /var/www/html \
